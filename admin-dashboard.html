@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SMARTIN</title>
+    <link rel="icon" type="image/png" href="flaticon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1>SMARTIN - Admin Dashboard</h1>
+                <div class="user-info">
+                    <span class="user-name">Admin Panel</span>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-main">
+            <!-- Tab Navigation -->
+            <div class="admin-tabs">
+                <button class="tab-btn active" data-tab="students">Students</button>
+                <button class="tab-btn" data-tab="subjects">Subject Mappings</button>
+                <button class="tab-btn" data-tab="attendance">Attendance Records</button>
+            </div>
+
+            <!-- Students Tab -->
+            <div class="tab-content active" id="students-tab">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Student Details</h2>
+                        <input type="text" id="student-search" class="search-input" placeholder="Search by name or USN...">
+                    </div>
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>USN</th>
+                                    <th>Name</th>
+                                    <th>Semester</th>
+                                    <th>College</th>
+                                    <th>Registered On</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-tbody">
+                                <tr>
+                                    <td colspan="5" class="loading">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Subject Mappings Tab -->
+            <div class="tab-content" id="subjects-tab">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Subject Mappings</h2>
+                        <input type="text" id="subject-search" class="search-input" placeholder="Search by student name...">
+                    </div>
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Student USN</th>
+                                    <th>Student Name</th>
+                                    <th>Subject Name</th>
+                                    <th>Subject Code</th>
+                                </tr>
+                            </thead>
+                            <tbody id="subjects-tbody">
+                                <tr>
+                                    <td colspan="4" class="loading">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Records Tab -->
+            <div class="tab-content" id="attendance-tab">
+                <div class="admin-section">
+                    <div class="section-header">
+                        <h2>Attendance Records</h2>
+                        <div class="filter-group">
+                            <input type="text" id="attendance-search" class="search-input" placeholder="Search by student name...">
+                            <select id="subject-filter" class="filter-select">
+                                <option value="">All Subjects</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Student USN</th>
+                                    <th>Student Name</th>
+                                    <th>Subject</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-tbody">
+                                <tr>
+                                    <td colspan="6" class="loading">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-dashboard.js"></script>
+</body>
+</html>
