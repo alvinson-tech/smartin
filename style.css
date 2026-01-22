@@ -220,7 +220,6 @@ body {
     color: #f59e0b;
 }
 
-
 .form-group input[readonly] {
     background-color: var(--bg-secondary);
     cursor: not-allowed;
@@ -305,7 +304,6 @@ body {
 .closed-message .login-link:hover::after {
     width: 100%;
 }
-
 
 /* Dashboard Styles */
 .dashboard-container {
@@ -774,11 +772,10 @@ body {
     font-size: 12px;
     text-align: center;
     transition: all 0.3s;
-    appearance: textfield; /* Standard */
-    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield;
+    -moz-appearance: textfield;
 }
 
-/* Hide spinner arrows for Chrome, Safari, Edge, Opera */
 .ia-input::-webkit-outer-spin-button,
 .ia-input::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -997,11 +994,6 @@ body {
     color: var(--danger);
 }
 
-/* Remove old attendance-dots styles */
-.attendance-dots {
-    display: none;
-}
-
 /* Footer Styles */
 .dashboard-footer {
     background-color: var(--bg-secondary);
@@ -1153,6 +1145,12 @@ body {
     color: var(--text-secondary);
 }
 
+.attendance-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .attendance-status {
     padding: 4px 12px;
     border-radius: 4px;
@@ -1179,12 +1177,6 @@ body {
     padding: 20px;
 }
 
-.attendance-item-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
 .btn-delete-attendance {
     background: transparent;
     border: 1px solid var(--border);
@@ -1206,324 +1198,6 @@ body {
 
 .btn-delete-attendance svg {
     display: block;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .dashboard-header {
-        padding: 12px 16px;
-    }
-
-    .header-content {
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
-    }
-
-    .dashboard-header h1 {
-        font-size: 20px;
-    }
-
-    .user-info {
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .user-name-clickable {
-        font-size: 12px;
-    }
-
-    .user-dropdown {
-        right: auto;
-        left: 0;
-        font-size: 11px;
-    }
-
-    .btn-logout {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-
-    .dashboard-main {
-        padding: 12px 16px;
-    }
-
-    .dashboard-tabs {
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-
-    .tab-heading {
-        font-size: 20px;
-        letter-spacing: 1px;
-    }
-
-    .tab-separator {
-        font-size: 20px;
-    }
-
-    .attendance-content {
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .overall-attendance-sidebar {
-        width: 100%;
-        min-width: auto;
-        max-width: 100%;
-        margin-bottom: 0;
-    }
-
-    .attendance-circle-container {
-        margin-bottom: 20px;
-    }
-
-    .attendance-circle-container h2 {
-        font-size: 15px;
-        margin-bottom: 15px;
-    }
-
-    .attendance-circle {
-        width: 180px;
-        height: 180px;
-    }
-
-    .progress-ring {
-        width: 180px !important;
-        height: 180px !important;
-    }
-
-    .progress-ring-circle,
-    .progress-ring-circle-bg {
-        r: 82;
-        cx: 90;
-        cy: 90;
-    }
-
-    .percentage {
-        font-size: 32px;
-    }
-
-    .subjects-section {
-        width: 100%;
-    }
-
-    .subjects-list {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .subject-card {
-        padding: 14px;
-    }
-
-    .subject-name {
-        font-size: 12px;
-    }
-
-    .subject-code {
-        font-size: 10px;
-    }
-
-    .class-count {
-        font-size: 10px;
-    }
-
-    .subject-percentage {
-        font-size: 18px;
-    }
-
-    .btn-action {
-        width: 30px;
-        height: 30px;
-        font-size: 10px;
-    }
-
-    .mini-calendar {
-        width: 100%;
-        max-width: 100%;
-        margin: 20px 0 0 0;
-        padding: 14px;
-    }
-
-    .calendar-header {
-        margin-bottom: 12px;
-    }
-
-    .calendar-month {
-        font-size: 13px;
-    }
-
-    .calendar-nav {
-        width: 28px;
-        height: 28px;
-        font-size: 13px;
-    }
-
-    .calendar-weekdays {
-        grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
-        margin-bottom: 6px;
-    }
-
-    .weekday {
-        font-size: 10px;
-        padding: 4px 0;
-        width: 100%;
-    }
-
-    .calendar-days {
-        grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
-    }
-
-    .calendar-day {
-        width: 100%;
-        height: 36px;
-        font-size: 11px;
-        padding: 2px;
-    }
-
-    .attendance-dot {
-        width: 5px;
-        height: 5px;
-    }
-
-    .attendance-plus {
-        font-size: 8px;
-    }
-
-    .marks-content {
-        margin-top: 0;
-    }
-
-    .marks-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .marks-card {
-        min-height: auto;
-        padding: 14px;
-    }
-
-    .marks-card-header {
-        min-height: 48px;
-        margin-bottom: 12px;
-        padding-bottom: 8px;
-    }
-
-    .marks-subject-name {
-        font-size: 12px;
-    }
-
-    .marks-subject-code {
-        font-size: 9px;
-    }
-
-    .ia-list {
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-
-    .ia-label {
-        font-size: 11px;
-    }
-
-    .ia-input {
-        width: 42px;
-        padding: 4px 5px;
-        font-size: 11px;
-    }
-
-    .ia-max-marks {
-        font-size: 11px;
-    }
-
-    .marks-summary {
-        padding-top: 10px;
-    }
-
-    .marks-average {
-        margin-bottom: 6px;
-    }
-
-    .average-label {
-        font-size: 11px;
-    }
-
-    .average-value {
-        font-size: 14px;
-    }
-
-    .marks-target {
-        font-size: 10px;
-        padding: 5px 8px;
-    }
-
-    .dashboard-footer {
-        padding: 10px 16px;
-    }
-
-    .footer-datetime {
-        font-size: 10px;
-    }
-
-    .footer-link {
-        font-size: 11px;
-    }
-
-    /* Modal adjustments for mobile */
-    .modal-content {
-        width: 95%;
-        max-width: 95%;
-    }
-
-    .modal-header {
-        padding: 16px;
-    }
-
-    .modal-header h3 {
-        font-size: 14px;
-    }
-
-    .modal-body {
-        padding: 16px;
-    }
-
-    .attendance-item {
-        padding: 10px;
-        margin-bottom: 8px;
-    }
-
-    .subject-name-modal {
-        font-size: 12px;
-    }
-
-    .subject-code-modal {
-        font-size: 10px;
-    }
-
-    .attendance-status {
-        padding: 3px 10px;
-        font-size: 10px;
-    }
-
-    .btn-delete-attendance {
-        padding: 5px 6px;
-    }
-
-    .btn-delete-attendance svg {
-        width: 12px;
-        height: 12px;
-    }
-}
-
-/* Tablet responsive */
-@media (max-width: 1024px) and (min-width: 769px) {
-    .marks-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 /* Admin Dashboard Styles */
@@ -1757,51 +1431,607 @@ body {
     color: var(--bg-primary);
 }
 
-/* Admin Responsive */
+/* ============================================
+   MOBILE RESPONSIVE STYLES - STARTS HERE
+   ============================================ */
+
 @media (max-width: 768px) {
+    /* Login & Registration Pages - Mobile */
+    .login-box {
+        padding: 30px 20px;
+    }
+
+    .login-box h1 {
+        font-size: 26px;
+    }
+
+    .subtitle {
+        font-size: 11px;
+    }
+
+    .form-group label {
+        font-size: 13px;
+    }
+
+    .form-group input {
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .btn-login {
+        font-size: 13px;
+        padding: 11px;
+    }
+
+    .register-link,
+    .admin-link {
+        font-size: 11px;
+    }
+
+    .register-link a,
+    .admin-link a {
+        font-size: 11px;
+    }
+
+    .closed-message {
+        padding: 20px 24px;
+        max-width: 90%;
+    }
+
+    .closed-message h2 {
+        font-size: 16px;
+    }
+
+    .closed-message p {
+        font-size: 12px;
+    }
+
+    .register-box {
+        padding: 25px 18px;
+    }
+
+    .section-title {
+        font-size: 14px;
+    }
+
+    /* Dashboard Header - Mobile */
+    .dashboard-header {
+        padding: 16px 20px;
+    }
+
+    .header-content {
+        flex-direction: row;
+        gap: 0;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dashboard-header h1 {
+        font-size: 18px;
+    }
+
+    .user-info {
+        gap: 12px;
+    }
+
+    .user-name-clickable {
+        font-size: 11px;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user-dropdown {
+        right: 0;
+        left: auto;
+        min-width: 180px;
+        font-size: 11px;
+    }
+
+    .user-dropdown-item {
+        font-size: 11px;
+        padding: 5px 0;
+    }
+
+    .user-dropdown-item:first-child {
+        font-size: 12px;
+    }
+
+    .btn-logout {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+
+    /* Dashboard Main - Mobile */
+    .dashboard-main {
+        padding: 16px 20px;
+    }
+
+    /* Tab Navigation - Mobile - FIXED */
+    .dashboard-tabs {
+        gap: 8px;
+        margin-bottom: 24px;
+        padding: 0 10px;
+    }
+
+    .tab-heading {
+        font-size: 16px;
+        letter-spacing: 1px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        transition: all 0.3s;
+    }
+
+    .tab-heading.active {
+        background-color: var(--bg-tertiary);
+    }
+
+    .tab-separator {
+        font-size: 16px;
+    }
+
+    /* Attendance Section - Mobile - FIXED */
+    .attendance-content {
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .overall-attendance-sidebar {
+        width: 100%;
+        min-width: auto;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .attendance-circle-container {
+        margin-bottom: 24px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .attendance-circle-container h2 {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    /* FIXED - Properly centered and sized radial progress */
+    .attendance-circle {
+        width: 200px;
+        height: 200px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+    }
+
+    .progress-ring {
+        width: 200px !important;
+        height: 200px !important;
+    }
+
+    .progress-ring-circle,
+    .progress-ring-circle-bg {
+        r: 90 !important;
+        cx: 100 !important;
+        cy: 100 !important;
+    }
+
+    .percentage {
+        font-size: 36px;
+    }
+
+    /* Subjects Section - Mobile */
+    .subjects-section {
+        width: 100%;
+    }
+
+    .subjects-list {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .subject-card {
+        padding: 14px;
+    }
+
+    .subject-name {
+        font-size: 12px;
+    }
+
+    .subject-code {
+        font-size: 10px;
+    }
+
+    .class-count {
+        font-size: 10px;
+    }
+
+    .subject-percentage {
+        font-size: 18px;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        font-size: 11px;
+    }
+
+    /* Mini Calendar - Mobile - FIXED */
+    .mini-calendar {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 16px;
+    }
+
+    .calendar-header {
+        margin-bottom: 12px;
+    }
+
+    .calendar-month {
+        font-size: 12px;
+    }
+
+    .calendar-nav {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+    }
+
+    .calendar-weekdays {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 3px;
+        margin-bottom: 8px;
+    }
+
+    .weekday {
+        font-size: 9px;
+        padding: 4px 0;
+        width: 100%;
+    }
+
+    .calendar-days {
+        grid-template-columns: repeat(7, 1fr);
+        gap: 3px;
+    }
+
+    .calendar-day {
+        width: 100%;
+        height: 38px;
+        font-size: 10px;
+        padding: 2px;
+    }
+
+    .attendance-dot {
+        width: 4px;
+        height: 4px;
+    }
+
+    .attendance-plus {
+        font-size: 7px;
+    }
+
+    /* Marks Section - Mobile */
+    .marks-content {
+        margin-top: 0;
+    }
+
+    .marks-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .marks-card {
+        min-height: auto;
+        padding: 14px;
+    }
+
+    .marks-card-header {
+        min-height: 44px;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+
+    .marks-subject-name {
+        font-size: 11px;
+    }
+
+    .marks-subject-code {
+        font-size: 9px;
+    }
+
+    .ia-list {
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .ia-label {
+        font-size: 10px;
+    }
+
+    .ia-input {
+        width: 40px;
+        padding: 4px 5px;
+        font-size: 11px;
+    }
+
+    .ia-max-marks {
+        font-size: 10px;
+    }
+
+    .marks-summary {
+        padding-top: 8px;
+    }
+
+    .marks-average {
+        margin-bottom: 6px;
+    }
+
+    .average-label {
+        font-size: 10px;
+    }
+
+    .average-value {
+        font-size: 13px;
+    }
+
+    .marks-target {
+        font-size: 9px;
+        padding: 5px 8px;
+        line-height: 1.3;
+    }
+
+    /* Dashboard Footer - Mobile */
+    .dashboard-footer {
+        padding: 12px 20px;
+        gap: 6px;
+    }
+
+    .footer-datetime {
+        font-size: 9px;
+        text-align: center;
+    }
+
+    .footer-link {
+        font-size: 10px;
+    }
+
+    /* Modal - Mobile - FIXED */
+    .modal-content {
+        width: 92%;
+        max-width: 92%;
+        max-height: 85vh;
+    }
+
+    .modal-header {
+        padding: 14px 16px;
+    }
+
+    .modal-header h3 {
+        font-size: 13px;
+    }
+
+    .modal-close {
+        width: 26px;
+        height: 26px;
+        font-size: 24px;
+    }
+
+    .modal-body {
+        padding: 14px 16px;
+    }
+
+    .attendance-item {
+        padding: 10px;
+        margin-bottom: 8px;
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .subject-info-modal {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .subject-name-modal {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .subject-code-modal {
+        font-size: 9px;
+    }
+
+    .attendance-item-actions {
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .attendance-status {
+        padding: 3px 8px;
+        font-size: 9px;
+        white-space: nowrap;
+    }
+
+    /* FIXED - Delete button visible on mobile */
+    .btn-delete-attendance {
+        padding: 5px 6px;
+        min-width: 28px;
+        height: 28px;
+    }
+
+    .btn-delete-attendance svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .no-attendance {
+        font-size: 11px;
+        padding: 16px;
+    }
+
+    /* Admin Dashboard - Mobile - FIXED */
     .admin-main {
-        padding: 20px;
+        padding: 16px 20px;
     }
 
     .admin-tabs {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        margin-bottom: 20px;
+        flex-wrap: nowrap;
     }
 
     .tab-btn {
         padding: 10px 16px;
-        font-size: 12px;
+        font-size: 11px;
         white-space: nowrap;
-    }
-
-    .section-header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .search-input {
-        min-width: 100%;
-    }
-
-    .filter-group {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .filter-select {
-        width: 100%;
+        flex-shrink: 0;
     }
 
     .admin-section {
         padding: 16px;
     }
 
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .section-header h2 {
+        font-size: 16px;
+    }
+
+    .search-input {
+        min-width: 100%;
+        width: 100%;
+        font-size: 12px;
+        padding: 9px 12px;
+    }
+
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .filter-select {
+        width: 100%;
+        min-width: 100%;
+        font-size: 12px;
+        padding: 9px 12px;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .admin-table {
-        font-size: 11px;
+        font-size: 10px;
+        min-width: 600px;
     }
 
     .admin-table th,
     .admin-table td {
-        padding: 10px 12px;
+        padding: 8px 10px;
+    }
+
+    .admin-table th {
+        font-size: 10px;
+    }
+
+    .status-badge {
+        padding: 3px 8px;
+        font-size: 9px;
+    }
+
+    .btn-delete {
+        padding: 5px 10px;
+        font-size: 9px;
+    }
+
+    .loading,
+    .no-data {
+        padding: 24px !important;
+        font-size: 11px;
+    }
+}
+
+/* Tablet Responsive - 769px to 1024px */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .marks-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .subjects-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-table {
+        font-size: 12px;
+    }
+}
+
+/* Small Mobile - Below 480px */
+@media (max-width: 480px) {
+    .dashboard-header h1 {
+        font-size: 16px;
+    }
+
+    .user-name-clickable {
+        font-size: 10px;
+        max-width: 100px;
+    }
+
+    .btn-logout {
+        padding: 5px 8px;
+        font-size: 9px;
+    }
+
+    .tab-heading {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+
+    .tab-separator {
+        font-size: 14px;
+    }
+
+    .attendance-circle {
+        width: 180px;
+        height: 180px;
+    }
+
+    .progress-ring {
+        width: 180px !important;
+        height: 180px !important;
+    }
+
+    .progress-ring-circle,
+    .progress-ring-circle-bg {
+        r: 82 !important;
+        cx: 90 !important;
+        cy: 90 !important;
+    }
+
+    .percentage {
+        font-size: 32px;
+    }
+
+    .footer-datetime {
+        font-size: 8px;
+        line-height: 1.4;
+    }
+
+    .footer-link {
+        font-size: 9px;
     }
 }
