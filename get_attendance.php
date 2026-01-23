@@ -41,8 +41,15 @@ $subjects = [];
 $total_present = 0;
 $total_classes = 0;
 
+// Categorized subjects
+$theorySubjects = [];
+$labSubjects = [];
+$projectElectives = [];
+$libraryPE = [];
+$remedialSubjects = [];
+
 while ($row = $result->fetch_assoc()) {
-    $subjects[] = [
+    $subjectData = [
         'id' => $row['id'],
         'name' => $row['name'],
         'code' => $row['code'],
@@ -51,8 +58,41 @@ while ($row = $result->fetch_assoc()) {
         'total_count' => intval($row['total_count'])
     ];
 
+    $subjects[] = $subjectData;
     $total_present += $row['present_count'];
     $total_classes += $row['total_count'];
+
+    // Categorize subjects based on name/code
+    $name = $row['name'];
+    $code = $row['code'];
+
+    // Remedial subjects (contains "(R)" or "Remedial")
+    if (strpos($code, '(R)') !== false || strpos($name, 'Remedial') !== false) {
+        $remedialSubjects[] = $subjectData;
+    }
+    // Library and PE
+    else if ($name === 'Library' || $name === 'Physical Education (PE)') {
+        $libraryPE[] = $subjectData;
+    }
+    // Lab subjects (contains "Lab" in name)
+    else if (strpos($name, 'Lab') !== false) {
+        $labSubjects[] = $subjectData;
+    }
+    // Project and Electives (Major Project, AEC Vertical, Open Elective)
+    else if (
+        strpos($name, 'Major Project') !== false ||
+        strpos($name, 'AEC Vertical') !== false ||
+        strpos($name, 'Airline') !== false ||
+        (strpos($code, 'MVJ22A') !== false && strpos($code, 'MVJ22AE') === false) ||
+        strpos($code, 'MVJ22AE') !== false ||
+        strpos($code, 'MVJ22CSP') !== false
+    ) {
+        $projectElectives[] = $subjectData;
+    }
+    // Theory subjects (Cloud Computing, Machine Learning, Blockchain, Indian Knowledge System)
+    else {
+        $theorySubjects[] = $subjectData;
+    }
 }
 
 // Calculate overall attendance
@@ -61,7 +101,14 @@ $overall = $total_classes > 0 ? round(($total_present / $total_classes) * 100, 2
 echo json_encode([
     'success' => true,
     'overall' => $overall,
-    'subjects' => $subjects
+    'subjects' => $subjects,
+    'categorized' => [
+        'theory' => $theorySubjects,
+        'labs' => $labSubjects,
+        'projectElectives' => $projectElectives,
+        'libraryPE' => $libraryPE,
+        'remedial' => $remedialSubjects
+    ]
 ]);
 
 $stmt->close();

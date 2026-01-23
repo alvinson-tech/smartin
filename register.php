@@ -77,6 +77,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ['Major Project Phase - I', 'MVJ22CSP65'],
             ['Blockchain Technology', 'MVJ22CS631'],
             ['Indian Knowledge System', 'MVJ22IKK68'],
+            // New subjects added
+            ['Cloud Computing (Remedial)', 'MVJ22CS61 (R)'],
+            ['Machine Learning (Remedial)', 'MVJ22CS62 (R)'],
+            ['Blockchain Technology (Remedial)', 'MVJ22CS631 (R)'],
+            ['Library', 'NA'],
+            ['Physical Education (PE)', 'NA'],
             // Next will be Open Elective (user-specific) - replaces Airline & Airport Management System
             // Last will be AEC Vertical (user-specific)
         ];

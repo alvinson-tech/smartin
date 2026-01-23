@@ -2,8 +2,13 @@
 let currentCalendarDate = new Date();
 let attendanceData = {};
 let marksLoaded = false; // Track if marks have been loaded
+let selectedDate = null; // Track selected date for attendance marking
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize selected date to today
+    const today = new Date();
+    selectedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    
     // Check if user is logged in
     checkAuth();
 
@@ -86,6 +91,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Calendar help toggle
+    const calendarHelpToggle = document.getElementById('calendarHelpToggle');
+    const calendarHelpContent = document.getElementById('calendarHelpContent');
+    
+    calendarHelpToggle.addEventListener('click', function() {
+        calendarHelpContent.classList.toggle('show');
+        this.classList.toggle('active');
+    });
 });
 
 function checkAuth() {
@@ -131,27 +145,169 @@ function loadAttendance() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Update overall attendance with color coding
-                const overallElement = document.getElementById('overallPercentage');
-                overallElement.textContent = data.overall + '%';
-                overallElement.className = 'percentage ' + getPercentageClass(data.overall);
+                // Store all subjects data globally for recalculation
+                window.attendanceData = data;
+                
+                // Calculate and update overall attendance based on toggle states
+                updateOverallAttendance();
 
-                // Update radial progress circle
-                updateProgressCircle(data.overall);
-
-                // Load subjects
+                // Load subjects in categorized sections
                 const subjectsGrid = document.getElementById('subjectsGrid');
                 subjectsGrid.innerHTML = '';
 
-                data.subjects.forEach(subject => {
-                    const subjectCard = createSubjectCard(subject);
-                    subjectsGrid.appendChild(subjectCard);
-                });
+                const categorized = data.categorized;
+
+                // Section 1: Theory Subjects
+                if (categorized.theory && categorized.theory.length > 0) {
+                    categorized.theory.forEach(subject => {
+                        const subjectCard = createSubjectCard(subject);
+                        subjectsGrid.appendChild(subjectCard);
+                    });
+                    
+                    // Add separator after theory subjects
+                    subjectsGrid.appendChild(createSeparator());
+                }
+
+                // Section 2: Lab Subjects
+                if (categorized.labs && categorized.labs.length > 0) {
+                    categorized.labs.forEach(subject => {
+                        const subjectCard = createSubjectCard(subject);
+                        subjectsGrid.appendChild(subjectCard);
+                    });
+                    
+                    // Add separator after lab subjects
+                    subjectsGrid.appendChild(createSeparator());
+                }
+
+                // Section 3: Project & Electives
+                if (categorized.projectElectives && categorized.projectElectives.length > 0) {
+                    categorized.projectElectives.forEach(subject => {
+                        const subjectCard = createSubjectCard(subject);
+                        subjectsGrid.appendChild(subjectCard);
+                    });
+                    
+                    // Add separator after project & electives
+                    subjectsGrid.appendChild(createSeparator());
+                }
+
+                // Section 4: Library & PE (with toggle)
+                if (categorized.libraryPE && categorized.libraryPE.length > 0) {
+                    // Add toggle header
+                    subjectsGrid.appendChild(createSectionToggle('libraryPE', 'Library & PE'));
+                    
+                    categorized.libraryPE.forEach(subject => {
+                        const subjectCard = createSubjectCard(subject);
+                        subjectsGrid.appendChild(subjectCard);
+                    });
+                    
+                    // Add separator after library & PE
+                    subjectsGrid.appendChild(createSeparator());
+                }
+
+                // Section 5: Remedial Classes (with toggle)
+                if (categorized.remedial && categorized.remedial.length > 0) {
+                    // Add toggle header
+                    subjectsGrid.appendChild(createSectionToggle('remedial', 'Remedial Classes'));
+                    
+                    categorized.remedial.forEach(subject => {
+                        const subjectCard = createSubjectCard(subject);
+                        subjectsGrid.appendChild(subjectCard);
+                    });
+                }
             }
         })
         .catch(error => {
             console.error('Error loading attendance:', error);
         });
+}
+
+// Get toggle state from localStorage (default: false - not included in overall)
+function getToggleState(sectionId) {
+    const state = localStorage.getItem(`toggle_${sectionId}`);
+    return state === 'true'; // Returns true if enabled, false otherwise
+}
+
+// Set toggle state in localStorage
+function setToggleState(sectionId, enabled) {
+    localStorage.setItem(`toggle_${sectionId}`, enabled.toString());
+}
+
+// Create section toggle button
+function createSectionToggle(sectionId, sectionName) {
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'section-toggle-container';
+    
+    const isEnabled = getToggleState(sectionId);
+    
+    toggleContainer.innerHTML = `
+        <div class="section-toggle-content">
+            <span class="section-toggle-label">${sectionName}</span>
+            <div class="toggle-wrapper">
+                <span class="toggle-description">Include in Overall %</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="toggle_${sectionId}" ${isEnabled ? 'checked' : ''}>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>
+    `;
+    
+    // Add event listener to toggle
+    const checkbox = toggleContainer.querySelector(`#toggle_${sectionId}`);
+    checkbox.addEventListener('change', function() {
+        setToggleState(sectionId, this.checked);
+        updateOverallAttendance();
+    });
+    
+    return toggleContainer;
+}
+
+// Update overall attendance based on toggle states
+function updateOverallAttendance() {
+    if (!window.attendanceData) return;
+    
+    const categorized = window.attendanceData.categorized;
+    let totalPresent = 0;
+    let totalClasses = 0;
+    
+    // Always include: Theory, Labs, Project & Electives
+    const alwaysInclude = [
+        ...(categorized.theory || []),
+        ...(categorized.labs || []),
+        ...(categorized.projectElectives || [])
+    ];
+    
+    alwaysInclude.forEach(subject => {
+        totalPresent += subject.present_count;
+        totalClasses += subject.total_count;
+    });
+    
+    // Conditionally include Library & PE
+    if (getToggleState('libraryPE') && categorized.libraryPE) {
+        categorized.libraryPE.forEach(subject => {
+            totalPresent += subject.present_count;
+            totalClasses += subject.total_count;
+        });
+    }
+    
+    // Conditionally include Remedial
+    if (getToggleState('remedial') && categorized.remedial) {
+        categorized.remedial.forEach(subject => {
+            totalPresent += subject.present_count;
+            totalClasses += subject.total_count;
+        });
+    }
+    
+    // Calculate overall percentage
+    const overall = totalClasses > 0 ? parseFloat(((totalPresent / totalClasses) * 100).toFixed(2)) : 0;
+    
+    // Update UI
+    const overallElement = document.getElementById('overallPercentage');
+    overallElement.textContent = overall + '%';
+    overallElement.className = 'percentage ' + getPercentageClass(overall);
+    
+    // Update radial progress circle
+    updateProgressCircle(overall);
 }
 
 function updateProgressCircle(percentage) {
@@ -184,25 +340,52 @@ function getPercentageClass(percentage) {
     }
 }
 
+function createSeparator() {
+    const separator = document.createElement('div');
+    separator.className = 'subjects-separator';
+    return separator;
+}
+
+
 function createSubjectCard(subject) {
     const card = document.createElement('div');
     card.className = 'subject-card';
     
     const percentageClass = getPercentageClass(subject.percentage);
     
+    // Calculate circle properties for radial progress
+    const radius = 28;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (subject.percentage / 100) * circumference;
+    
+    // Determine color based on percentage
+    let strokeColor = '#ef4444'; // red (low)
+    if (subject.percentage > 85) {
+        strokeColor = '#10b981'; // green (high)
+    } else if (subject.percentage >= 75) {
+        strokeColor = '#f59e0b'; // orange (medium)
+    }
+    
     card.innerHTML = `
         <div class="subject-info">
             <div class="subject-name">${subject.name}</div>
             <div class="subject-code">${subject.code}</div>
-            <div class="class-count">Classes: ${subject.present_count}/${subject.total_count}</div>
         </div>
         <div class="subject-stats">
-            <div class="subject-percentage ${percentageClass}">${subject.percentage}%</div>
+            <div class="subject-radial-container">
+                <svg class="subject-progress-ring" width="70" height="70" viewBox="0 0 70 70">
+                    <circle class="subject-progress-ring-bg" stroke="#2d2d2d" stroke-width="4" fill="transparent" r="${radius}" cx="35" cy="35"/>
+                    <circle class="subject-progress-ring-circle" stroke="${strokeColor}" stroke-width="4" fill="transparent" r="${radius}" cx="35" cy="35" 
+                        style="stroke-dasharray: ${circumference} ${circumference}; stroke-dashoffset: ${offset}; transform: rotate(-90deg); transform-origin: 50% 50%;"/>
+                </svg>
+                <div class="subject-percentage-text ${percentageClass}">${subject.percentage}%</div>
+            </div>
             <div class="subject-actions">
                 <button class="btn-action btn-present" onclick="updateAttendance(${subject.id}, 'present')">P</button>
                 <button class="btn-action btn-absent" onclick="updateAttendance(${subject.id}, 'absent')">A</button>
             </div>
         </div>
+        <div class="class-count-bottom">TOTAL CLASS: ${subject.present_count}/${subject.total_count}</div>
     `;
     
     return card;
@@ -214,7 +397,7 @@ function updateAttendance(subjectId, status) {
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `subject_id=${subjectId}&status=${status}`
+        body: `subject_id=${subjectId}&status=${status}&date=${selectedDate}`
     })
     .then(response => response.json())
     .then(data => {
@@ -309,6 +492,24 @@ function createDayElement(day, isOtherMonth, isToday, attendanceInfo, dateString
         dayDiv.classList.add('today');
     }
     
+    // Check if this date is in the future
+    let isFutureDate = false;
+    if (dateString && !isOtherMonth) {
+        const clickedDate = new Date(dateString + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        isFutureDate = clickedDate > today;
+        
+        if (isFutureDate) {
+            dayDiv.classList.add('future-date');
+        }
+    }
+    
+    // Check if this date is selected
+    if (dateString && dateString === selectedDate) {
+        dayDiv.classList.add('selected-date');
+    }
+    
     const dayNumber = document.createElement('div');
     dayNumber.textContent = day;
     dayDiv.appendChild(dayNumber);
@@ -353,13 +554,41 @@ function createDayElement(day, isOtherMonth, isToday, attendanceInfo, dateString
             }
             
             dayDiv.appendChild(indicator);
-            
-            // Add click event to show attendance details
-            dayDiv.addEventListener('click', () => showAttendanceDetails(dateString));
         }
     }
     
+    // Add click event for date selection and viewing attendance (only for non-future dates)
+    if (!isOtherMonth && dateString && !isFutureDate) {
+        dayDiv.addEventListener('click', () => handleDateClick(dateString));
+    }
+    
     return dayDiv;
+}
+
+// Handle date click - select date or show attendance details
+function handleDateClick(dateString) {
+    // Check if the date is in the future
+    const clickedDate = new Date(dateString + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+    
+    // Prevent selecting future dates
+    if (clickedDate > today) {
+        return; // Do nothing for future dates
+    }
+    
+    // If clicking the already selected date, show attendance details
+    if (dateString === selectedDate) {
+        // Check if there's attendance data for this date
+        if (attendanceData[dateString]) {
+            showAttendanceDetails(dateString);
+        }
+    } else {
+        // Select this date for marking attendance
+        selectedDate = dateString;
+        // Re-render calendar to update selected date styling
+        renderCalendar();
+    }
 }
 
 function showAttendanceDetails(dateString) {

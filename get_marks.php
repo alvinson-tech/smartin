@@ -16,8 +16,16 @@ $student_id = $_SESSION['student_id'];
 
 $conn = getDBConnection();
 
-// Get all subjects for this student
-$sql = "SELECT id, name, code FROM subjects WHERE student_id = ? ORDER BY id";
+// Get all subjects for this student, excluding labs and the 5 new subjects
+// Excluded: Lab subjects, Library, PE, and Remedial classes
+$sql = "SELECT id, name, code FROM subjects 
+        WHERE student_id = ? 
+        AND name NOT LIKE '%Lab%' 
+        AND name != 'Library' 
+        AND name != 'Physical Education (PE)'
+        AND code NOT LIKE '%(R)%'
+        AND name NOT LIKE '%Remedial%'
+        ORDER BY id";
 $subjects_stmt = $conn->prepare($sql);
 $subjects_stmt->bind_param("i", $student_id);
 $subjects_stmt->execute();
@@ -65,6 +73,43 @@ while ($subject = $result->fetch_assoc()) {
 }
 
 $subjects_stmt->close();
+
+// Custom ordering function
+function getSubjectOrder($subject)
+{
+    $name = $subject['subject_name'];
+    $code = $subject['subject_code'];
+
+    // Define the order priority
+    if (strpos($name, 'Cloud Computing & Full Stack') !== false)
+        return 1;
+    if (strpos($name, 'Machine Learning') !== false && strpos($name, 'Lab') === false)
+        return 2;
+    if (strpos($name, 'Blockchain Technology') !== false && strpos($code, '(R)') === false)
+        return 3;
+    if (strpos($name, 'Indian Knowledge System') !== false)
+        return 4;
+
+    // Open Elective - any subject with AE code (except specific ones) or similar patterns
+    if (strpos($code, 'MVJ22AE') !== false || strpos($name, 'Airline') !== false)
+        return 5;
+
+    // AEC Vertical - subjects with A6 or similar vertical codes
+    if (strpos($code, 'MVJ22A6') !== false || strpos($name, 'AEC Vertical') !== false)
+        return 6;
+
+    // Major Project
+    if (strpos($name, 'Major Project') !== false)
+        return 7;
+
+    // Default - any other subject
+    return 8;
+}
+
+// Sort the marks data according to custom order
+usort($marks_data, function ($a, $b) {
+    return getSubjectOrder($a) - getSubjectOrder($b);
+});
 
 echo json_encode([
     'success' => true,

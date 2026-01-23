@@ -85,6 +85,11 @@ INSERT INTO subjects (student_id, name, code) VALUES
     (@demo_student_id, 'Major Project Phase - I', 'MVJ22CSP65'),
     (@demo_student_id, 'Blockchain Technology', 'MVJ22CS631'),
     (@demo_student_id, 'Indian Knowledge System', 'MVJ22IKK68'),
+    (@demo_student_id, 'Cloud Computing (Remedial)', 'MVJ22CS61 (R)'),
+    (@demo_student_id, 'Machine Learning (Remedial)', 'MVJ22CS62 (R)'),
+    (@demo_student_id, 'Blockchain Technology (Remedial)', 'MVJ22CS631 (R)'),
+    (@demo_student_id, 'Library', 'NA'),
+    (@demo_student_id, 'Physical Education (PE)', 'NA'),
     (@demo_student_id, 'Airline & Airport Management System', 'MVJ22AE644'),
     (@demo_student_id, 'AEC Vertical Level 3 - Robotics', 'MVJ22A6YY3');
 
