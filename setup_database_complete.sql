@@ -20,6 +20,8 @@ CREATE TABLE students (
     name VARCHAR(100) NOT NULL,
     semester INT NOT NULL,
     college VARCHAR(200) NOT NULL,
+    fingerprint_credentials TEXT NULL DEFAULT NULL COMMENT 'JSON array of WebAuthn credentials for biometric login',
+    fingerprint_prompted TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Whether user has been prompted for fingerprint registration',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_usn (usn),
     INDEX idx_username (username)

@@ -71,6 +71,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Subject dates modal close functionality
+    document.getElementById('closeSubjectDatesModal').addEventListener('click', closeSubjectDatesModal);
+    document.getElementById('subjectDatesModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeSubjectDatesModal();
+        }
+    });
+
     // Tab switching functionality
     document.querySelectorAll('.tab-heading').forEach(tab => {
         tab.addEventListener('click', function() {
@@ -133,6 +141,30 @@ function loadUserInfo() {
                 // Format college name (abbreviate if needed)
                 const collegeShort = student.college.includes('MVJ') ? 'CSE, MVJCE' : student.college;
                 document.getElementById('dropdownCollege').textContent = collegeShort;
+                
+                // Store user info globally for fingerprint features
+                window.currentUser = student;
+                
+                // Update fingerprint button state
+                const fingerprintBtn = document.getElementById('fingerprintManageBtn');
+                if (fingerprintBtn) {
+                    if (student.has_fingerprint) {
+                        fingerprintBtn.classList.add('has-fingerprint');
+                        fingerprintBtn.title = 'Manage Fingerprint Login (Registered)';
+                    } else {
+                        fingerprintBtn.classList.remove('has-fingerprint');
+                        fingerprintBtn.title = 'Setup Fingerprint Login';
+                    }
+                }
+                
+                // Check if we should show fingerprint registration prompt
+                // Show only if: WebAuthn supported, user hasn't been prompted, and doesn't have fingerprint
+                if (window.PublicKeyCredential && !student.fingerprint_prompted && !student.has_fingerprint) {
+                    // Delay showing the prompt to let the dashboard load first
+                    setTimeout(() => {
+                        showFingerprintPromptModal();
+                    }, 1500);
+                }
             }
         })
         .catch(error => {
@@ -204,15 +236,33 @@ function loadAttendance() {
                     subjectsGrid.appendChild(createSeparator());
                 }
 
-                // Section 5: Remedial Classes (with toggle)
+                // Section 5: Remedial Classes (collapsible dropdown)
                 if (categorized.remedial && categorized.remedial.length > 0) {
-                    // Add toggle header
-                    subjectsGrid.appendChild(createSectionToggle('remedial', 'Remedial Classes'));
+                    // Add collapsible section header
+                    subjectsGrid.appendChild(createCollapsibleSectionHeader('remedial', 'Remedial Classes'));
+                    
+                    // Create container for remedial subjects
+                    const remedialContainer = document.createElement('div');
+                    remedialContainer.className = 'collapsible-section-content';
+                    remedialContainer.id = 'remedial-content';
+                    
+                    // Add toggle header inside the container
+                    remedialContainer.appendChild(createSectionToggle('remedial', 'Remedial Classes'));
                     
                     categorized.remedial.forEach(subject => {
                         const subjectCard = createSubjectCard(subject);
-                        subjectsGrid.appendChild(subjectCard);
+                        remedialContainer.appendChild(subjectCard);
                     });
+                    
+                    subjectsGrid.appendChild(remedialContainer);
+                    
+                    // Set initial state (closed by default)
+                    const isOpen = getCollapsibleState('remedial');
+                    if (!isOpen) {
+                        remedialContainer.classList.remove('open');
+                    } else {
+                        remedialContainer.classList.add('open');
+                    }
                 }
             }
         })
@@ -230,6 +280,52 @@ function getToggleState(sectionId) {
 // Set toggle state in localStorage
 function setToggleState(sectionId, enabled) {
     localStorage.setItem(`toggle_${sectionId}`, enabled.toString());
+}
+
+// Get collapsible state from localStorage (default: false - closed)
+function getCollapsibleState(sectionId) {
+    const state = localStorage.getItem(`collapsible_${sectionId}`);
+    return state === 'true'; // Returns true if open, false otherwise (default closed)
+}
+
+// Set collapsible state in localStorage
+function setCollapsibleState(sectionId, isOpen) {
+    localStorage.setItem(`collapsible_${sectionId}`, isOpen.toString());
+}
+
+// Create collapsible section header
+function createCollapsibleSectionHeader(sectionId, sectionName) {
+    const headerContainer = document.createElement('div');
+    headerContainer.className = 'collapsible-section-header';
+    
+    const isOpen = getCollapsibleState(sectionId);
+    
+    headerContainer.innerHTML = `
+        <div class="collapsible-header-content">
+            <span class="collapsible-section-label">${sectionName}</span>
+            <svg class="collapsible-arrow ${isOpen ? 'open' : ''}" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    `;
+    
+    // Add click handler to toggle section
+    headerContainer.addEventListener('click', function() {
+        const content = document.getElementById(`${sectionId}-content`);
+        const arrow = this.querySelector('.collapsible-arrow');
+        
+        if (content.classList.contains('open')) {
+            content.classList.remove('open');
+            arrow.classList.remove('open');
+            setCollapsibleState(sectionId, false);
+        } else {
+            content.classList.add('open');
+            arrow.classList.add('open');
+            setCollapsibleState(sectionId, true);
+        }
+    });
+    
+    return headerContainer;
 }
 
 // Create section toggle button
@@ -350,6 +446,15 @@ function createSeparator() {
 function createSubjectCard(subject) {
     const card = document.createElement('div');
     card.className = 'subject-card';
+    
+    // Make the card clickable to show attendance dates
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function(e) {
+        // Don't trigger if clicking on P/A buttons
+        if (!e.target.classList.contains('btn-action')) {
+            showSubjectAttendanceDates(subject.id, subject.name, subject.code);
+        }
+    });
     
     const percentageClass = getPercentageClass(subject.percentage);
     
@@ -651,6 +756,115 @@ function closeModal() {
     modal.classList.remove('show');
 }
 
+function closeSubjectDatesModal() {
+    const modal = document.getElementById('subjectDatesModal');
+    modal.classList.remove('show');
+}
+
+// Show all attendance dates for a specific subject
+function showSubjectAttendanceDates(subjectId, subjectName, subjectCode) {
+    fetch(`get_subject_attendance_dates.php?subject_id=${subjectId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const modal = document.getElementById('subjectDatesModal');
+                const modalTitle = document.getElementById('subjectDatesModalTitle');
+                const modalBody = document.getElementById('subjectDatesModalBody');
+                
+                modalTitle.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <div>${data.subject_name}</div>
+                        <div style="font-size: 0.85em; font-weight: 400; color: #888;">${data.subject_code}</div>
+                    </div>
+                `;
+                
+                if (data.attendance_dates.length === 0) {
+                    modalBody.innerHTML = '<div class="no-attendance">No attendance marked for this subject yet</div>';
+                } else {
+                    // Group dates by month
+                    const monthGroups = {};
+                    
+                    data.attendance_dates.forEach(item => {
+                        const date = new Date(item.date + 'T00:00:00');
+                        const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                        
+                        if (!monthGroups[monthYear]) {
+                            monthGroups[monthYear] = {
+                                monthName: monthName,
+                                dates: []
+                            };
+                        }
+                        
+                        monthGroups[monthYear].dates.push(item);
+                    });
+                    
+                    // Convert to array and sort by month (newest first)
+                    const sortedMonths = Object.keys(monthGroups).sort().reverse();
+                    
+                    let html = '<div class="subject-dates-list">';
+                    
+                    sortedMonths.forEach((monthKey, index) => {
+                        const group = monthGroups[monthKey];
+                        const monthCount = group.dates.length;
+                        
+                        // Add month header
+                        html += `
+                            <div class="month-header">
+                                <span class="month-name">${group.monthName}</span>
+                                <span class="month-count">${monthCount}</span>
+                            </div>
+                        `;
+                        
+                        // Add dates for this month
+                        group.dates.forEach(item => {
+                            // Format date for display as DD.MM.YYYY - Day
+                            const date = new Date(item.date + 'T00:00:00');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const year = date.getFullYear();
+                            const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+                            const dateFormatted = `${day}.${month}.${year} - ${dayName}`;
+                            
+                            html += `
+                                <div class="subject-date-item">
+                                    <div class="subject-date-info">
+                                        <div class="subject-date-text">${dateFormatted}</div>
+                                        <div class="subject-date-status ${item.status}">${item.status.toUpperCase()}</div>
+                                    </div>
+                                    <button class="btn-delete-attendance" onclick="deleteSubjectAttendance(${item.attendance_id}, '${data.subject_name}', '${item.date}')" title="Delete this attendance">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        
+                        // Add separator after each month except the last one
+                        if (index < sortedMonths.length - 1) {
+                            html += '<div class="month-separator"></div>';
+                        }
+                    });
+                    
+                    html += '</div>';
+                    modalBody.innerHTML = html;
+                }
+                
+                modal.classList.add('show');
+            } else {
+                alert('Error loading attendance dates: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading subject attendance dates:', error);
+            alert('An error occurred while loading attendance dates');
+        });
+}
+
 // Footer Date/Time Update (IST)
 function updateFooterDateTime() {
     const now = new Date();
@@ -905,7 +1119,7 @@ function updateMarks(inputElement) {
     });
 }
 
-// Delete student's own attendance record
+// Delete student's own attendance record (from calendar modal)
 function deleteStudentAttendance(attendanceId, subjectName, dateString) {
     const date = new Date(dateString + 'T00:00:00');
     const dateFormatted = date.toLocaleDateString('en-US', { 
@@ -944,4 +1158,464 @@ function deleteStudentAttendance(attendanceId, subjectName, dateString) {
         console.error('Error:', error);
         alert('An error occurred while deleting attendance');
     });
+}
+
+// Delete attendance from subject dates modal
+function deleteSubjectAttendance(attendanceId, subjectName, dateString) {
+    const date = new Date(dateString + 'T00:00:00');
+    const dateFormatted = date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
+    
+    if (!confirm(`Are you sure you want to delete this attendance record?\n\nSubject: ${subjectName}\nDate: ${dateFormatted}`)) {
+        return;
+    }
+    
+    fetch('delete_student_attendance.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `attendance_id=${attendanceId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close subject dates modal
+            closeSubjectDatesModal();
+            
+            // Reload attendance data to update counts and percentages
+            loadAttendance();
+            
+            // Refresh calendar to update indicators
+            renderCalendar();
+        } else {
+            alert('Error deleting attendance: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting attendance');
+    });
+}
+
+// ============================================
+// FINGERPRINT LOGIN FUNCTIONS
+// ============================================
+
+// Initialize fingerprint event listeners
+function initFingerprintListeners() {
+    // Fingerprint management button - handle both click and touch for mobile
+    const fingerprintManageBtn = document.getElementById('fingerprintManageBtn');
+    if (fingerprintManageBtn) {
+        let touchHandled = false;
+        
+        // Touch event for mobile devices - fires first on mobile
+        fingerprintManageBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            touchHandled = true;
+            showFingerprintManageModal();
+            // Reset flag after a short delay
+            setTimeout(() => { touchHandled = false; }, 300);
+        }, { passive: false });
+        
+        // Standard click event - fires on desktop and as fallback
+        fingerprintManageBtn.addEventListener('click', function(e) {
+            // If touch already handled this interaction, skip
+            if (touchHandled) {
+                e.preventDefault();
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            showFingerprintManageModal();
+        });
+    }
+
+    // Fingerprint prompt modal buttons
+    const enableFingerprintBtn = document.getElementById('enableFingerprintBtn');
+    if (enableFingerprintBtn) {
+        enableFingerprintBtn.addEventListener('click', registerFingerprint);
+    }
+
+    const skipFingerprintBtn = document.getElementById('skipFingerprintBtn');
+    if (skipFingerprintBtn) {
+        skipFingerprintBtn.addEventListener('click', dismissFingerprintPrompt);
+    }
+
+    // Close buttons for fingerprint modals
+    const closeFingerprintPrompt = document.getElementById('closeFingerprintPrompt');
+    if (closeFingerprintPrompt) {
+        closeFingerprintPrompt.addEventListener('click', closeFingerprintPromptModal);
+    }
+
+    const closeFingerprintManage = document.getElementById('closeFingerprintManage');
+    if (closeFingerprintManage) {
+        closeFingerprintManage.addEventListener('click', closeFingerprintManageModal);
+    }
+
+    // Add new fingerprint button
+    const addNewFingerprintBtn = document.getElementById('addNewFingerprintBtn');
+    if (addNewFingerprintBtn) {
+        addNewFingerprintBtn.addEventListener('click', registerFingerprint);
+    }
+
+    // Close modals on backdrop click
+    const promptModal = document.getElementById('fingerprintPromptModal');
+    if (promptModal) {
+        promptModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFingerprintPromptModal();
+            }
+        });
+    }
+
+    const manageModal = document.getElementById('fingerprintManageModal');
+    if (manageModal) {
+        manageModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeFingerprintManageModal();
+            }
+        });
+    }
+}
+
+// Call this when DOM is loaded
+document.addEventListener('DOMContentLoaded', initFingerprintListeners);
+
+// Show fingerprint registration prompt modal
+function showFingerprintPromptModal() {
+    const modal = document.getElementById('fingerprintPromptModal');
+    if (modal) {
+        modal.classList.add('show');
+    }
+}
+
+// Close fingerprint prompt modal
+function closeFingerprintPromptModal() {
+    const modal = document.getElementById('fingerprintPromptModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+// Show fingerprint management modal
+function showFingerprintManageModal() {
+    const modal = document.getElementById('fingerprintManageModal');
+    if (modal) {
+        modal.classList.add('show');
+        loadFingerprintCredentials();
+    }
+}
+
+// Close fingerprint management modal
+function closeFingerprintManageModal() {
+    const modal = document.getElementById('fingerprintManageModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+// Dismiss fingerprint prompt (user clicked "Maybe Later")
+async function dismissFingerprintPrompt() {
+    try {
+        await fetch('fingerprint_register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'dismiss_prompt' })
+        });
+    } catch (e) {
+        console.error('Error dismissing prompt:', e);
+    }
+    closeFingerprintPromptModal();
+}
+
+// Register a new fingerprint
+async function registerFingerprint() {
+    if (!window.PublicKeyCredential) {
+        alert('Fingerprint login is not supported on this browser');
+        return;
+    }
+
+    const enableBtn = document.getElementById('enableFingerprintBtn');
+    const addBtn = document.getElementById('addNewFingerprintBtn');
+    
+    // Disable buttons during registration
+    if (enableBtn) {
+        enableBtn.disabled = true;
+        enableBtn.textContent = 'Registering...';
+    }
+    if (addBtn) {
+        addBtn.disabled = true;
+        addBtn.innerHTML = '<span class="loading-spinner"></span> Registering...';
+    }
+
+    try {
+        // Get challenge and user info from server
+        const challengeResponse = await fetch('fingerprint_register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_challenge' })
+        });
+        const challengeData = await challengeResponse.json();
+
+        if (!challengeData.success) {
+            throw new Error(challengeData.message || 'Failed to get registration challenge');
+        }
+
+        // Convert challenge to ArrayBuffer
+        const challenge = new Uint8Array(challengeData.challenge.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+        
+        // Create user ID from username
+        const userId = new TextEncoder().encode(challengeData.user_id);
+
+        // Get device name
+        const deviceName = getDeviceName();
+
+        // Create credential
+        const credential = await navigator.credentials.create({
+            publicKey: {
+                challenge: challenge,
+                rp: {
+                    name: 'SMARTIN',
+                    id: window.location.hostname
+                },
+                user: {
+                    id: userId,
+                    name: challengeData.user_id,
+                    displayName: challengeData.user_name
+                },
+                pubKeyCredParams: [
+                    { type: 'public-key', alg: -7 },   // ES256
+                    { type: 'public-key', alg: -257 }  // RS256
+                ],
+                authenticatorSelection: {
+                    authenticatorAttachment: 'platform',
+                    userVerification: 'required',
+                    requireResidentKey: false
+                },
+                timeout: 60000,
+                attestation: 'none'
+            }
+        });
+
+        // Send credential to server
+        const registerResponse = await fetch('fingerprint_register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'register_credential',
+                credential_id: arrayBufferToBase64(credential.rawId),
+                public_key: arrayBufferToBase64(credential.response.getPublicKey()),
+                device_name: deviceName
+            })
+        });
+        const registerData = await registerResponse.json();
+
+        if (registerData.success) {
+            // Save user for remembered login
+            if (window.currentUser) {
+                localStorage.setItem('smartin_remembered_user', JSON.stringify({
+                    username: window.currentUser.usn,
+                    name: window.currentUser.name
+                }));
+            }
+
+            // Update UI
+            closeFingerprintPromptModal();
+            closeFingerprintManageModal();
+            
+            // Update button state
+            const fingerprintBtn = document.getElementById('fingerprintManageBtn');
+            if (fingerprintBtn) {
+                fingerprintBtn.classList.add('has-fingerprint');
+                fingerprintBtn.title = 'Manage Fingerprint Login (Registered)';
+            }
+
+            // Update current user state
+            if (window.currentUser) {
+                window.currentUser.has_fingerprint = true;
+                window.currentUser.fingerprint_prompted = true;
+            }
+
+            alert('Fingerprint registered successfully! You can now use 1-Tap Login.');
+            
+            // Reload credentials if manage modal was open
+            if (document.getElementById('fingerprintManageModal')?.classList.contains('show')) {
+                loadFingerprintCredentials();
+            }
+        } else {
+            throw new Error(registerData.message || 'Failed to register fingerprint');
+        }
+    } catch (e) {
+        console.error('Fingerprint registration error:', e);
+        if (e.name === 'NotAllowedError') {
+            alert('Fingerprint registration was cancelled or timed out.');
+        } else if (e.name === 'NotSupportedError') {
+            alert('Your device does not support fingerprint/biometric login.');
+        } else {
+            alert('Failed to register fingerprint: ' + e.message);
+        }
+    } finally {
+        // Reset buttons
+        if (enableBtn) {
+            enableBtn.disabled = false;
+            enableBtn.textContent = 'Enable 1-Tap Login';
+        }
+        if (addBtn) {
+            addBtn.disabled = false;
+            addBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add New Fingerprint
+            `;
+        }
+    }
+}
+
+// Load registered fingerprint credentials
+async function loadFingerprintCredentials() {
+    const listContainer = document.getElementById('fingerprintCredentialsList');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '<div class="loading-credentials">Loading credentials...</div>';
+
+    try {
+        const response = await fetch('fingerprint_register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'get_credentials' })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            if (data.credentials.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="no-credentials">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 2a7 7 0 0 0-7 7c0 2 .5 3.5 1.5 5"/>
+                            <path d="M19 9a7 7 0 0 0-7-7"/>
+                            <path d="M12 10a7 7 0 0 0-3 5.7"/>
+                            <path d="M17 14a7 7 0 0 0-.5-2.5"/>
+                            <path d="M12 6a4 4 0 0 1 4 4c0 1.5-.5 3-1.5 4.5"/>
+                            <path d="M12 6a4 4 0 0 0-4 4c0 1.5.5 3 1.5 4.5"/>
+                            <path d="M12 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" fill="currentColor"/>
+                            <path d="M12 14v6"/>
+                        </svg>
+                        <p>No fingerprints registered yet</p>
+                    </div>
+                `;
+            } else {
+                let html = '';
+                data.credentials.forEach((cred, index) => {
+                    const registeredDate = cred.registered_at ? new Date(cred.registered_at).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    }) : 'Unknown';
+                    
+                    html += `
+                        <div class="fingerprint-credential-item">
+                            <div class="credential-info">
+                                <div class="credential-device">${cred.device_name || 'Device ' + (index + 1)}</div>
+                                <div class="credential-date">Registered: ${registeredDate}</div>
+                            </div>
+                            <button class="btn-delete-credential" onclick="deleteCredential('${cred.id}')" title="Remove this device">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                });
+                listContainer.innerHTML = html;
+            }
+        } else {
+            throw new Error(data.message || 'Failed to load credentials');
+        }
+    } catch (e) {
+        console.error('Error loading credentials:', e);
+        listContainer.innerHTML = '<div class="no-credentials">Failed to load credentials</div>';
+    }
+}
+
+// Delete a fingerprint credential
+async function deleteCredential(credentialId) {
+    if (!confirm('Are you sure you want to remove this device from fingerprint login?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('fingerprint_register.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'delete_credential',
+                credential_id: credentialId
+            })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // Reload the credentials list
+            loadFingerprintCredentials();
+
+            // Update button state if no more credentials
+            if (data.credential_count === 0) {
+                const fingerprintBtn = document.getElementById('fingerprintManageBtn');
+                if (fingerprintBtn) {
+                    fingerprintBtn.classList.remove('has-fingerprint');
+                    fingerprintBtn.title = 'Setup Fingerprint Login';
+                }
+                if (window.currentUser) {
+                    window.currentUser.has_fingerprint = false;
+                }
+                // Clear remembered user
+                localStorage.removeItem('smartin_remembered_user');
+            }
+        } else {
+            throw new Error(data.message || 'Failed to delete credential');
+        }
+    } catch (e) {
+        console.error('Error deleting credential:', e);
+        alert('Failed to delete credential: ' + e.message);
+    }
+}
+
+// Helper function to get device name
+function getDeviceName() {
+    const ua = navigator.userAgent;
+    if (/iPhone/.test(ua)) return 'iPhone';
+    if (/iPad/.test(ua)) return 'iPad';
+    if (/Mac/.test(ua)) return 'Mac';
+    if (/Android/.test(ua)) return 'Android Device';
+    if (/Windows/.test(ua)) return 'Windows PC';
+    if (/Linux/.test(ua)) return 'Linux Device';
+    return 'Unknown Device';
+}
+
+// Helper function to convert ArrayBuffer to Base64
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+// Helper function to convert Base64 to ArrayBuffer
+function base64ToArrayBuffer(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
 }

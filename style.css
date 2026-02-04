@@ -566,7 +566,7 @@ body {
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 18px;
-    transition: border-color 0.3s;
+    transition: all 0.3s;
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-rows: auto 1fr;
@@ -576,7 +576,9 @@ body {
 }
 
 .subject-card:hover {
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgba(74, 158, 255, 0.5);
+    background-color: rgba(74, 158, 255, 0.03);
+    transform: translateY(-1px);
 }
 
 .subject-info {
@@ -806,6 +808,65 @@ body {
 
 .toggle-switch:hover .toggle-slider {
     border-color: var(--text-secondary);
+}
+
+/* Collapsible Section Styles */
+.collapsible-section-header {
+    grid-column: 1 / -1;
+    margin: 8px 0 12px 0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.collapsible-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: all 0.3s;
+}
+
+.collapsible-header-content:hover {
+    background-color: var(--bg-tertiary);
+    border-color: rgba(74, 158, 255, 0.5);
+}
+
+.collapsible-section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+}
+
+.collapsible-arrow {
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.collapsible-arrow.open {
+    transform: rotate(180deg);
+}
+
+.collapsible-section-content {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease, margin 0.3s ease;
+    margin: 0;
+}
+
+.collapsible-section-content.open {
+    max-height: 2000px;
+    opacity: 1;
+    margin-bottom: 16px;
 }
 
 /* Section Separator */
@@ -1441,6 +1502,97 @@ body {
 
 .btn-delete-attendance svg {
     display: block;
+}
+
+/* Subject Dates Modal Styles */
+.subject-dates-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.month-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+}
+
+.month-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.month-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background-color: var(--bg-tertiary);
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.subject-date-item {
+    padding: 14px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+    margin-bottom: 8px;
+}
+
+.subject-date-item:hover {
+    background-color: rgba(74, 158, 255, 0.05);
+    border-color: rgba(74, 158, 255, 0.3);
+}
+
+.subject-date-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.subject-date-text {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.subject-date-status {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.subject-date-status.present {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+    border: 1px solid var(--success);
+}
+
+.subject-date-status.absent {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+}
+
+.month-separator {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 20px 0;
 }
 
 /* Admin Dashboard Styles */
@@ -2276,5 +2428,360 @@ body {
 
     .footer-link {
         font-size: 9px;
+    }
+}
+
+/* ============================================
+   FINGERPRINT LOGIN STYLES
+   ============================================ */
+
+/* Login Page Fingerprint Button */
+.btn-fingerprint {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-fingerprint:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-fingerprint:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-fingerprint .fingerprint-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.btn-fingerprint .loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Switch User Link */
+.switch-user-link {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 12px;
+}
+
+.switch-user-link a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.switch-user-link a:hover {
+    color: var(--text-primary);
+}
+
+.switch-user-link a:hover .reset-cache-text {
+    color: #60a5fa;
+}
+
+.reset-cache-text {
+    color: #3b82f6;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+/* Readonly Input Style */
+.readonly-input {
+    background-color: var(--bg-secondary) !important;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Dashboard Fingerprint Manage Button */
+.btn-fingerprint-manage {
+    padding: 8px;
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-fingerprint-manage:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.btn-fingerprint-manage.has-fingerprint {
+    color: var(--success);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.fingerprint-icon-small {
+    width: 18px;
+    height: 18px;
+}
+
+/* Fingerprint Modal Styles */
+.fingerprint-modal {
+    max-width: 400px;
+}
+
+.fingerprint-modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.fingerprint-icon-large {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    color: var(--success);
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.fingerprint-icon-large svg {
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.4));
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.8));
+    }
+}
+
+.fingerprint-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.fingerprint-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.btn-enable-fingerprint {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-enable-fingerprint:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-skip-fingerprint {
+    padding: 12px 24px;
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-skip-fingerprint:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Fingerprint Credentials List */
+.fingerprint-credentials-list {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.fingerprint-credential-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.fingerprint-credential-item:hover {
+    border-color: var(--text-secondary);
+}
+
+.credential-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.credential-device {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.credential-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.btn-delete-credential {
+    padding: 6px;
+    background-color: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.btn-delete-credential:hover {
+    background-color: var(--danger);
+    color: #fff;
+    opacity: 1;
+}
+
+.btn-delete-credential svg {
+    width: 14px;
+    height: 14px;
+}
+
+.no-credentials {
+    padding: 30px 20px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.no-credentials svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.btn-add-fingerprint {
+    width: 100%;
+    padding: 14px 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.btn-add-fingerprint:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive adjustments for fingerprint features */
+@media (max-width: 480px) {
+    .fingerprint-modal {
+        max-width: 90%;
+        margin: 0 auto;
+    }
+    
+    .fingerprint-icon-large {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .fingerprint-description {
+        font-size: 13px;
+    }
+    
+    .btn-enable-fingerprint,
+    .btn-add-fingerprint {
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Mobile fingerprint button fixes */
+@media (max-width: 768px) {
+    .btn-fingerprint-manage {
+        /* Ensure minimum touch target size of 44px (iOS/Android recommended) */
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+        /* Prevent double-tap zoom */
+        touch-action: manipulation;
+        /* Ensure button is above other elements */
+        position: relative;
+        z-index: 10;
+        /* Remove any potential delay */
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .btn-fingerprint-manage:active {
+        background-color: var(--bg-tertiary);
+        transform: scale(0.95);
+    }
+    
+    .fingerprint-icon-small {
+        width: 20px;
+        height: 20px;
     }
 }

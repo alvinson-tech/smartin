@@ -17,8 +17,8 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
 $student_id = $_SESSION['student_id'];
 $conn = getDBConnection();
 
-// Get student information
-$sql = "SELECT usn, username, name, semester, college FROM students WHERE id = ?";
+// Get student information including fingerprint status
+$sql = "SELECT usn, username, name, semester, college, fingerprint_credentials, fingerprint_prompted FROM students WHERE id = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
@@ -27,6 +27,10 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $student = $result->fetch_assoc();
 
+    // Check fingerprint status
+    $has_fingerprint = !empty($student['fingerprint_credentials']);
+    $fingerprint_prompted = (bool) $student['fingerprint_prompted'];
+
     echo json_encode([
         'success' => true,
         'student' => [
@@ -34,7 +38,9 @@ if ($result->num_rows > 0) {
             'username' => $student['username'],
             'name' => $student['name'],
             'semester' => $student['semester'],
-            'college' => $student['college']
+            'college' => $student['college'],
+            'has_fingerprint' => $has_fingerprint,
+            'fingerprint_prompted' => $fingerprint_prompted
         ]
     ]);
 } else {
