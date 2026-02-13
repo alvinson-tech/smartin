@@ -92,6 +92,7 @@ INSERT INTO subjects (student_id, name, code) VALUES
     (@demo_student_id, 'Blockchain Technology (Remedial)', 'MVJ22CS631 (R)'),
     (@demo_student_id, 'Library', 'NA'),
     (@demo_student_id, 'Physical Education (PE)', 'NA'),
+    (@demo_student_id, 'Integrated Technical Coding (ITT)', 'NA'),
     (@demo_student_id, 'Airline & Airport Management System', 'MVJ22AE644'),
     (@demo_student_id, 'AEC Vertical Level 3 - Robotics', 'MVJ22A6YY3');
 

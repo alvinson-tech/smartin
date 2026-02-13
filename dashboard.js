@@ -222,10 +222,10 @@ function loadAttendance() {
                     subjectsGrid.appendChild(createSeparator());
                 }
 
-                // Section 4: Library & PE (with toggle)
+                // Section 4: Other (with toggle)
                 if (categorized.libraryPE && categorized.libraryPE.length > 0) {
                     // Add toggle header
-                    subjectsGrid.appendChild(createSectionToggle('libraryPE', 'Library & PE'));
+                    subjectsGrid.appendChild(createSectionToggle('libraryPE', 'Other'));
                     
                     categorized.libraryPE.forEach(subject => {
                         const subjectCard = createSubjectCard(subject);
@@ -378,7 +378,7 @@ function updateOverallAttendance() {
         totalClasses += subject.total_count;
     });
     
-    // Conditionally include Library & PE
+    // Conditionally include Other (Library, PE, ITT)
     if (getToggleState('libraryPE') && categorized.libraryPE) {
         categorized.libraryPE.forEach(subject => {
             totalPresent += subject.present_count;

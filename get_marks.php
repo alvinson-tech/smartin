@@ -16,13 +16,14 @@ $student_id = $_SESSION['student_id'];
 
 $conn = getDBConnection();
 
-// Get all subjects for this student, excluding labs and the 5 new subjects
-// Excluded: Lab subjects, Library, PE, and Remedial classes
+// Get all subjects for this student, excluding labs and non-graded subjects
+// Excluded: Lab subjects, Library, PE, ITT, and Remedial classes
 $sql = "SELECT id, name, code FROM subjects 
         WHERE student_id = ? 
         AND name NOT LIKE '%Lab%' 
         AND name != 'Library' 
         AND name != 'Physical Education (PE)'
+        AND name != 'Integrated Technical Coding (ITT)'
         AND code NOT LIKE '%(R)%'
         AND name NOT LIKE '%Remedial%'
         ORDER BY id";

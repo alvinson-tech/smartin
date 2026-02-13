@@ -83,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ['Blockchain Technology (Remedial)', 'MVJ22CS631 (R)'],
             ['Library', 'NA'],
             ['Physical Education (PE)', 'NA'],
+            ['Integrated Technical Coding (ITT)', 'NA'],
             // Next will be Open Elective (user-specific) - replaces Airline & Airport Management System
             // Last will be AEC Vertical (user-specific)
         ];
