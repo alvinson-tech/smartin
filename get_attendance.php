@@ -70,8 +70,8 @@ while ($row = $result->fetch_assoc()) {
     if (strpos($code, '(R)') !== false || strpos($name, 'Remedial') !== false) {
         $remedialSubjects[] = $subjectData;
     }
-    // Library, PE, and ITT (Other section)
-    else if ($name === 'Library' || $name === 'Physical Education (PE)' || $name === 'Integrated Technical Coding (ITT)') {
+    // Library, PE, ITT, and Softskill | Aptitude (Other section)
+    else if ($name === 'Library' || $name === 'Physical Education (PE)' || $name === 'Integrated Technical Coding (ITT)' || $name === 'Softskill | Aptitude') {
         $libraryPE[] = $subjectData;
     }
     // Lab subjects (contains "Lab" in name)

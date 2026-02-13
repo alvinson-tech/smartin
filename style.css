@@ -421,61 +421,22 @@ body {
     width: 100%;
 }
 
-/* Dashboard Tabs Navigation */
-.dashboard-tabs {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
+/* Dashboard Heading */
+.dashboard-heading {
+    text-align: center;
     margin-bottom: 30px;
 }
 
-.tab-heading {
+.dashboard-heading h1 {
     font-size: 28px;
     font-weight: 700;
-    color: var(--text-secondary);
-    text-align: center;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin: 0;
-    user-select: none;
-}
-
-.tab-heading:hover {
-    color: var(--text-primary);
-}
-
-.tab-heading.active {
     color: var(--accent);
+    letter-spacing: 2px;
+    margin: 0;
 }
 
-.tab-separator {
-    font-size: 28px;
-    font-weight: 300;
-    color: var(--border);
-}
-
-/* Tab Sections */
-.tab-section {
-    display: none;
-    animation: fadeIn 0.3s ease-in;
-    will-change: opacity, transform;
-}
-
-.tab-section.active {
-    display: block;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.attendance-container {
+    width: 100%;
 }
 
 .attendance-content {
@@ -556,7 +517,7 @@ body {
 
 .subjects-list {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     padding-bottom: 20px;
 }
@@ -685,6 +646,8 @@ body {
     font-family: 'JetBrains Mono', monospace;
     cursor: pointer;
     transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-action.btn-present {
@@ -693,8 +656,9 @@ body {
 }
 
 .btn-action.btn-present:hover {
-    background-color: var(--success);
-    color: var(--bg-primary);
+    background-color: rgba(16, 185, 129, 0.2);
+    border-color: var(--success);
+    color: var(--success);
 }
 
 .btn-action.btn-absent {
@@ -703,9 +667,58 @@ body {
 }
 
 .btn-action.btn-absent:hover {
-    background-color: var(--danger);
-    color: var(--bg-primary);
+    background-color: rgba(239, 68, 68, 0.2);
+    border-color: var(--danger);
+    color: var(--danger);
 }
+
+/* Animation for button click feedback */
+.btn-action.animating {
+    pointer-events: none;
+}
+
+.btn-action.animating::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    font-weight: 700;
+    animation: fadeInOut 0.8s ease-in-out;
+}
+
+.btn-action.btn-present.animating::after {
+    content: '✓';
+    color: var(--success);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.btn-action.btn-absent.animating::after {
+    content: '✕';
+    color: var(--danger);
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    70% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+}
+
 
 /* Subjects Separator */
 .subjects-separator {
@@ -877,174 +890,6 @@ body {
     margin: 40px 0 30px 0;
 }
 
-/* Marks Section */
-.marks-content {
-    margin-bottom: 30px;
-}
-
-.marks-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-}
-
-.marks-card {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.3s;
-    display: flex;
-    flex-direction: column;
-    min-height: 280px;
-    contain: layout style paint;
-}
-
-.marks-card:hover {
-    border-color: var(--text-secondary);
-    background-color: var(--bg-tertiary);
-    transform: translateZ(0);
-}
-
-.marks-card-header {
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-    min-height: 52px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-.marks-subject-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 4px;
-    line-height: 1.3;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-}
-
-.marks-subject-code {
-    font-size: 10px;
-    color: var(--text-secondary);
-}
-
-.ia-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 14px;
-    flex: 1;
-}
-
-.ia-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.ia-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.ia-input-group {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.ia-input {
-    width: 45px;
-    padding: 5px 6px;
-    background-color: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text-primary);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
-    text-align: center;
-    transition: all 0.3s;
-    appearance: textfield;
-    -moz-appearance: textfield;
-}
-
-.ia-input::-webkit-outer-spin-button,
-.ia-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.ia-input:focus {
-    outline: none;
-    border-color: var(--accent);
-    background-color: var(--bg-secondary);
-}
-
-.ia-input::placeholder {
-    color: var(--text-secondary);
-    opacity: 0.5;
-}
-
-.ia-max-marks {
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-.marks-summary {
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-    margin-top: auto;
-}
-
-.marks-average {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.average-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.average-value {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.marks-target {
-    font-size: 11px;
-    padding: 6px 10px;
-    border-radius: 4px;
-    text-align: center;
-    line-height: 1.4;
-}
-
-.marks-target.success {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: var(--success);
-    border: 1px solid var(--success);
-}
-
-.marks-target.warning {
-    background-color: rgba(245, 158, 11, 0.15);
-    color: var(--warning);
-    border: 1px solid var(--warning);
-}
-
-.marks-target.info {
-    background-color: rgba(74, 158, 255, 0.15);
-    color: #4a9eff;
-    border: 1px solid #4a9eff;
-}
 
 /* Mini Calendar Styles */
 .mini-calendar {
@@ -1492,16 +1337,42 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
+    width: 28px;
+    height: 28px;
 }
 
 .btn-delete-attendance:hover {
-    background-color: var(--danger);
+    background-color: rgba(239, 68, 68, 0.2);
     border-color: var(--danger);
-    color: var(--bg-primary);
+    color: var(--danger);
 }
 
 .btn-delete-attendance svg {
     display: block;
+    transition: opacity 0.3s;
+}
+
+/* Animation for delete button */
+.btn-delete-attendance.animating {
+    pointer-events: none;
+}
+
+.btn-delete-attendance.animating svg {
+    opacity: 0;
+}
+
+.btn-delete-attendance.animating::after {
+    content: '✕';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--danger);
+    animation: fadeInOut 0.8s ease-in-out;
 }
 
 /* Subject Dates Modal Styles */
@@ -1943,29 +1814,6 @@ body {
         padding: 16px 20px;
     }
 
-    /* Tab Navigation - Mobile - FIXED */
-    .dashboard-tabs {
-        gap: 8px;
-        margin-bottom: 24px;
-        padding: 0 10px;
-    }
-
-    .tab-heading {
-        font-size: 16px;
-        letter-spacing: 1px;
-        padding: 8px 12px;
-        border-radius: 4px;
-        transition: all 0.3s;
-    }
-
-    .tab-heading.active {
-        background-color: var(--bg-tertiary);
-    }
-
-    .tab-separator {
-        font-size: 16px;
-    }
-
     /* Attendance Section - Mobile - FIXED */
     .attendance-content {
         flex-direction: column;
@@ -2111,75 +1959,6 @@ body {
         font-size: 7px;
     }
 
-    /* Marks Section - Mobile */
-    .marks-content {
-        margin-top: 0;
-    }
-
-    .marks-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .marks-card {
-        min-height: auto;
-        padding: 14px;
-    }
-
-    .marks-card-header {
-        min-height: 44px;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-    }
-
-    .marks-subject-name {
-        font-size: 11px;
-    }
-
-    .marks-subject-code {
-        font-size: 9px;
-    }
-
-    .ia-list {
-        gap: 8px;
-        margin-bottom: 10px;
-    }
-
-    .ia-label {
-        font-size: 10px;
-    }
-
-    .ia-input {
-        width: 40px;
-        padding: 4px 5px;
-        font-size: 11px;
-    }
-
-    .ia-max-marks {
-        font-size: 10px;
-    }
-
-    .marks-summary {
-        padding-top: 8px;
-    }
-
-    .marks-average {
-        margin-bottom: 6px;
-    }
-
-    .average-label {
-        font-size: 10px;
-    }
-
-    .average-value {
-        font-size: 13px;
-    }
-
-    .marks-target {
-        font-size: 9px;
-        padding: 5px 8px;
-        line-height: 1.3;
-    }
 
     /* Dashboard Footer - Mobile */
     .dashboard-footer {
@@ -2362,12 +2141,8 @@ body {
 
 /* Tablet Responsive - 769px to 1024px */
 @media (max-width: 1024px) and (min-width: 769px) {
-    .marks-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
     .subjects-list {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
 
     .admin-table {

@@ -1,7 +1,6 @@
 // Dashboard script
 let currentCalendarDate = new Date();
 let attendanceData = {};
-let marksLoaded = false; // Track if marks have been loaded
 let selectedDate = null; // Track selected date for attendance marking
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -17,9 +16,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load attendance data
     loadAttendance();
-
-    // Don't load marks initially - lazy load when tab is clicked
-    // loadMarks();
 
     // Initialize calendar
     initializeCalendar();
@@ -77,27 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === this) {
             closeSubjectDatesModal();
         }
-    });
-
-    // Tab switching functionality
-    document.querySelectorAll('.tab-heading').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            
-            // Remove active class from all tabs and sections
-            document.querySelectorAll('.tab-heading').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
-            
-            // Add active class to clicked tab and corresponding section
-            this.classList.add('active');
-            document.getElementById(tabName + '-section').classList.add('active');
-            
-            // Lazy load marks data when marks tab is clicked for the first time
-            if (tabName === 'marks' && !marksLoaded) {
-                loadMarks();
-                marksLoaded = true;
-            }
-        });
     });
     
     // Calendar help toggle
@@ -222,17 +197,35 @@ function loadAttendance() {
                     subjectsGrid.appendChild(createSeparator());
                 }
 
-                // Section 4: Other (with toggle)
+                // Section 4: Other (collapsible dropdown)
                 if (categorized.libraryPE && categorized.libraryPE.length > 0) {
-                    // Add toggle header
-                    subjectsGrid.appendChild(createSectionToggle('libraryPE', 'Other'));
+                    // Add collapsible section header
+                    subjectsGrid.appendChild(createCollapsibleSectionHeader('libraryPE', 'Other'));
+                    
+                    // Create container for Other subjects
+                    const libraryPEContainer = document.createElement('div');
+                    libraryPEContainer.className = 'collapsible-section-content';
+                    libraryPEContainer.id = 'libraryPE-content';
+                    
+                    // Add toggle header inside the container
+                    libraryPEContainer.appendChild(createSectionToggle('libraryPE', 'Other'));
                     
                     categorized.libraryPE.forEach(subject => {
                         const subjectCard = createSubjectCard(subject);
-                        subjectsGrid.appendChild(subjectCard);
+                        libraryPEContainer.appendChild(subjectCard);
                     });
                     
-                    // Add separator after library & PE
+                    subjectsGrid.appendChild(libraryPEContainer);
+                    
+                    // Set initial state (closed by default)
+                    const isOpen = getCollapsibleState('libraryPE');
+                    if (!isOpen) {
+                        libraryPEContainer.classList.remove('open');
+                    } else {
+                        libraryPEContainer.classList.add('open');
+                    }
+                    
+                    // Add separator after Other section
                     subjectsGrid.appendChild(createSeparator());
                 }
 
@@ -486,14 +479,52 @@ function createSubjectCard(subject) {
                 <div class="subject-percentage-text ${percentageClass}">${subject.percentage}%</div>
             </div>
             <div class="subject-actions">
-                <button class="btn-action btn-present" onclick="updateAttendance(${subject.id}, 'present')">P</button>
-                <button class="btn-action btn-absent" onclick="updateAttendance(${subject.id}, 'absent')">A</button>
+                <button class="btn-action btn-present" data-subject-id="${subject.id}" data-status="present">P</button>
+                <button class="btn-action btn-absent" data-subject-id="${subject.id}" data-status="absent">A</button>
             </div>
         </div>
         <div class="class-count-bottom">TOTAL CLASS: ${subject.present_count}/${subject.total_count}</div>
     `;
     
+    // Add event listeners to buttons with animation
+    const presentBtn = card.querySelector('.btn-present');
+    const absentBtn = card.querySelector('.btn-absent');
+    
+    presentBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        animateButton(this, () => {
+            updateAttendance(subject.id, 'present');
+        });
+    });
+    
+    absentBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        animateButton(this, () => {
+            updateAttendance(subject.id, 'absent');
+        });
+    });
+    
     return card;
+}
+
+function animateButton(button, callback) {
+    // Add animating class
+    button.classList.add('animating');
+    
+    // Store original text
+    const originalText = button.textContent;
+    button.textContent = '';
+    
+    // Remove animation class and restore text after animation
+    setTimeout(() => {
+        button.classList.remove('animating');
+        button.textContent = originalText;
+        
+        // Execute callback (update attendance)
+        if (callback) {
+            callback();
+        }
+    }, 800); // Match animation duration
 }
 
 function updateAttendance(subjectId, status) {
@@ -728,7 +759,7 @@ function showAttendanceDetails(dateString) {
                                 </div>
                                 <div class="attendance-item-actions">
                                     <div class="attendance-status ${item.status}">${item.status.toUpperCase()}</div>
-                                    <button class="btn-delete-attendance" onclick="deleteStudentAttendance(${item.attendance_id}, '${item.subject_name}', '${dateString}')" title="Delete this attendance">
+                                    <button class="btn-delete-attendance" data-attendance-id="${item.attendance_id}" data-subject-name="${item.subject_name}" data-date="${dateString}" title="Delete this attendance">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="3 6 5 6 21 6"></polyline>
                                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -741,6 +772,17 @@ function showAttendanceDetails(dateString) {
                         `;
                     });
                     modalBody.innerHTML = html;
+                    
+                    // Add event listeners to delete buttons
+                    modalBody.querySelectorAll('.btn-delete-attendance').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const attendanceId = this.getAttribute('data-attendance-id');
+                            const subjectName = this.getAttribute('data-subject-name');
+                            const date = this.getAttribute('data-date');
+                            deleteStudentAttendance(attendanceId, subjectName, date, this);
+                        });
+                    });
                 }
                 
                 modal.classList.add('show');
@@ -770,6 +812,11 @@ function showSubjectAttendanceDates(subjectId, subjectName, subjectCode) {
                 const modal = document.getElementById('subjectDatesModal');
                 const modalTitle = document.getElementById('subjectDatesModalTitle');
                 const modalBody = document.getElementById('subjectDatesModalBody');
+                
+                // Store subject info in modal dataset for refresh after deletion
+                modal.dataset.currentSubjectId = subjectId;
+                modal.dataset.currentSubjectName = data.subject_name;
+                modal.dataset.currentSubjectCode = data.subject_code;
                 
                 modalTitle.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -832,7 +879,7 @@ function showSubjectAttendanceDates(subjectId, subjectName, subjectCode) {
                                         <div class="subject-date-text">${dateFormatted}</div>
                                         <div class="subject-date-status ${item.status}">${item.status.toUpperCase()}</div>
                                     </div>
-                                    <button class="btn-delete-attendance" onclick="deleteSubjectAttendance(${item.attendance_id}, '${data.subject_name}', '${item.date}')" title="Delete this attendance">
+                                    <button class="btn-delete-attendance" data-attendance-id="${item.attendance_id}" data-subject-name="${data.subject_name}" data-date="${item.date}" title="Delete this attendance">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                             <polyline points="3 6 5 6 21 6"></polyline>
                                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -852,6 +899,17 @@ function showSubjectAttendanceDates(subjectId, subjectName, subjectCode) {
                     
                     html += '</div>';
                     modalBody.innerHTML = html;
+                    
+                    // Add event listeners to delete buttons
+                    modalBody.querySelectorAll('.btn-delete-attendance').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const attendanceId = this.getAttribute('data-attendance-id');
+                            const subjectName = this.getAttribute('data-subject-name');
+                            const date = this.getAttribute('data-date');
+                            deleteSubjectAttendance(attendanceId, subjectName, date, this);
+                        });
+                    });
                 }
                 
                 modal.classList.add('show');
@@ -894,311 +952,91 @@ function updateFooterDateTime() {
     document.getElementById('footerDateTime').textContent = `${dateString} | ${timeString} IST`;
 }
 
-// Marks Functions
-function loadMarks() {
-    fetch('get_marks.php')
+
+// Delete student's own attendance record (from calendar modal)
+function deleteStudentAttendance(attendanceId, subjectName, dateString, buttonElement) {
+    // Add animating class
+    buttonElement.classList.add('animating');
+    
+    // Remove animation class after animation
+    setTimeout(() => {
+        buttonElement.classList.remove('animating');
+        
+        // Execute delete
+        fetch('delete_student_attendance.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `attendance_id=${attendanceId}`
+        })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                const marksGrid = document.getElementById('marksGrid');
-                marksGrid.innerHTML = '';
-
-                data.marks.forEach(subject => {
-                    const marksCard = createMarksCard(subject);
-                    marksGrid.appendChild(marksCard);
-                });
+                // Reload attendance data to update counts and percentages
+                loadAttendance();
+                
+                // Refresh calendar to update indicators
+                renderCalendar();
+                
+                // Refresh the modal content to show updated attendance
+                showAttendanceDetails(dateString);
+            } else {
+                alert('Error deleting attendance: ' + data.message);
             }
         })
         .catch(error => {
-            console.error('Error loading marks:', error);
+            console.error('Error:', error);
+            alert('An error occurred while deleting attendance');
         });
-}
-
-// Utility function for debouncing
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-function createMarksCard(subject) {
-    const card = document.createElement('div');
-    card.className = 'marks-card';
-    
-    // Calculate average and target
-    const ia1 = subject.ia1 ? parseFloat(subject.ia1.obtained) : null;
-    const ia2 = subject.ia2 ? parseFloat(subject.ia2.obtained) : null;
-    const ia3 = subject.ia3 ? parseFloat(subject.ia3.obtained) : null;
-    
-    const { average, targetMessage, targetClass } = calculateMarksStats(ia1, ia2, ia3);
-    
-    card.innerHTML = `
-        <div class="marks-card-header">
-            <div class="marks-subject-name">${subject.subject_name}</div>
-            <div class="marks-subject-code">${subject.subject_code}</div>
-        </div>
-        
-        <div class="ia-list">
-            <div class="ia-item">
-                <span class="ia-label">IA - 1</span>
-                <div class="ia-input-group">
-                    <input type="number" 
-                           class="ia-input" 
-                           data-subject-id="${subject.subject_id}" 
-                           data-ia-number="1"
-                           value="${ia1 !== null ? ia1 : ''}"
-                           placeholder="--"
-                           min="0" 
-                           max="50" 
-                           step="0.5">
-                    <span class="ia-max-marks">/ 50</span>
-                </div>
-            </div>
-            
-            <div class="ia-item">
-                <span class="ia-label">IA - 2</span>
-                <div class="ia-input-group">
-                    <input type="number" 
-                           class="ia-input" 
-                           data-subject-id="${subject.subject_id}" 
-                           data-ia-number="2"
-                           value="${ia2 !== null ? ia2 : ''}"
-                           placeholder="--"
-                           min="0" 
-                           max="50" 
-                           step="0.5">
-                    <span class="ia-max-marks">/ 50</span>
-                </div>
-            </div>
-            
-            <div class="ia-item">
-                <span class="ia-label">IA - 3</span>
-                <div class="ia-input-group">
-                    <input type="number" 
-                           class="ia-input" 
-                           data-subject-id="${subject.subject_id}" 
-                           data-ia-number="3"
-                           value="${ia3 !== null ? ia3 : ''}"
-                           placeholder="--"
-                           min="0" 
-                           max="50" 
-                           step="0.5">
-                    <span class="ia-max-marks">/ 50</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="marks-summary">
-            <div class="marks-average">
-                <span class="average-label">Average</span>
-                <span class="average-value">${average}</span>
-            </div>
-            <div class="marks-target ${targetClass}">${targetMessage}</div>
-        </div>
-    `;
-    
-    // Create debounced update function
-    const debouncedUpdate = debounce(updateMarks, 800);
-    
-    // Add event listeners to inputs with debouncing
-    const inputs = card.querySelectorAll('.ia-input');
-    inputs.forEach(input => {
-        input.addEventListener('input', function() {
-            // Use debounced function for input event
-            debouncedUpdate(this);
-        });
-        
-        input.addEventListener('blur', function() {
-            // Immediate update on blur (when user leaves the field)
-            updateMarks(this);
-        });
-    });
-    
-    return card;
-}
-
-function calculateMarksStats(ia1, ia2, ia3) {
-    const marks = [ia1, ia2, ia3].filter(m => m !== null);
-    
-    // Base case: No marks entered
-    if (marks.length === 0) {
-        return {
-            average: '--',
-            targetMessage: 'Enter marks to see statistics',
-            targetClass: 'info'
-        };
-    }
-    
-    const total = marks.reduce((sum, m) => sum + m, 0);
-    const average = total / marks.length;
-    const targetAverage = 20; // Target is 20/50
-    const targetTotal = 60; // 20 * 3 IAs
-    
-    let targetMessage = '';
-    let targetClass = '';
-    
-    const remaining = 3 - marks.length;
-    
-    if (remaining === 0) {
-        // All 3 IAs completed - just show if average achieved
-        if (average >= targetAverage) {
-            targetMessage = `✓ Average achieved!`;
-            targetClass = 'success';
-        } else {
-            targetMessage = `Average not achieved (${average.toFixed(2)}/20)`;
-            targetClass = 'warning';
-        }
-    } else {
-        // Calculate minimum needed in remaining IAs
-        const totalNeeded = targetTotal - total;
-        const minPerRemainingIA = totalNeeded / remaining;
-        
-        if (minPerRemainingIA > 50) {
-            targetMessage = `Target of 20 avg not achievable`;
-            targetClass = 'warning';
-        } else if (minPerRemainingIA <= 0) {
-            targetMessage = `✓ Already safe for 20+ average!`;
-            targetClass = 'success';
-        } else {
-            if (remaining === 2) {
-                // After IA-1: Show min needed in both IA-2 and IA-3
-                targetMessage = `Min ${minPerRemainingIA.toFixed(1)} in IA-2 & IA-3 for 20 avg`;
-                targetClass = 'info';
-            } else {
-                // After IA-2: Show min needed in IA-3
-                targetMessage = `Min ${minPerRemainingIA.toFixed(1)} in IA-3 for 20 avg`;
-                targetClass = 'info';
-            }
-        }
-    }
-    
-    return {
-        average: average.toFixed(2),
-        targetMessage,
-        targetClass
-    };
-}
-
-function updateMarks(inputElement) {
-    const subjectId = inputElement.dataset.subjectId;
-    const iaNumber = inputElement.dataset.iaNumber;
-    const marksObtained = inputElement.value;
-    
-    // Validate input
-    if (marksObtained !== '' && (parseFloat(marksObtained) < 0 || parseFloat(marksObtained) > 50)) {
-        alert('Marks should be between 0 and 50');
-        inputElement.value = '';
-        return;
-    }
-    
-    fetch('update_marks.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `subject_id=${subjectId}&ia_number=${iaNumber}&marks_obtained=${marksObtained}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Reload marks to update average and target
-            loadMarks();
-        } else {
-            alert('Error updating marks: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while updating marks');
-    });
-}
-
-// Delete student's own attendance record (from calendar modal)
-function deleteStudentAttendance(attendanceId, subjectName, dateString) {
-    const date = new Date(dateString + 'T00:00:00');
-    const dateFormatted = date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-    });
-    
-    if (!confirm(`Are you sure you want to delete this attendance record?\n\nSubject: ${subjectName}\nDate: ${dateFormatted}`)) {
-        return;
-    }
-    
-    fetch('delete_student_attendance.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `attendance_id=${attendanceId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Close modal
-            closeModal();
-            
-            // Reload attendance data to update counts and percentages
-            loadAttendance();
-            
-            // Refresh calendar to update indicators
-            renderCalendar();
-        } else {
-            alert('Error deleting attendance: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while deleting attendance');
-    });
+    }, 800); // Match animation duration
 }
 
 // Delete attendance from subject dates modal
-function deleteSubjectAttendance(attendanceId, subjectName, dateString) {
-    const date = new Date(dateString + 'T00:00:00');
-    const dateFormatted = date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-    });
+function deleteSubjectAttendance(attendanceId, subjectName, dateString, buttonElement) {
+    // Get the subject ID from the modal to refresh it
+    const modal = document.getElementById('subjectDatesModal');
+    const currentSubjectId = modal.dataset.currentSubjectId;
+    const currentSubjectName = modal.dataset.currentSubjectName;
+    const currentSubjectCode = modal.dataset.currentSubjectCode;
     
-    if (!confirm(`Are you sure you want to delete this attendance record?\n\nSubject: ${subjectName}\nDate: ${dateFormatted}`)) {
-        return;
-    }
+    // Add animating class
+    buttonElement.classList.add('animating');
     
-    fetch('delete_student_attendance.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `attendance_id=${attendanceId}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Close subject dates modal
-            closeSubjectDatesModal();
-            
-            // Reload attendance data to update counts and percentages
-            loadAttendance();
-            
-            // Refresh calendar to update indicators
-            renderCalendar();
-        } else {
-            alert('Error deleting attendance: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while deleting attendance');
-    });
+    // Remove animation class after animation
+    setTimeout(() => {
+        buttonElement.classList.remove('animating');
+        
+        // Execute delete
+        fetch('delete_student_attendance.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `attendance_id=${attendanceId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload attendance data to update counts and percentages
+                loadAttendance();
+                
+                // Refresh calendar to update indicators
+                renderCalendar();
+                
+                // Refresh the subject dates modal to show updated list
+                if (currentSubjectId) {
+                    showSubjectAttendanceDates(currentSubjectId, currentSubjectName, currentSubjectCode);
+                }
+            } else {
+                alert('Error deleting attendance: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting attendance');
+        });
+    }, 800); // Match animation duration
 }
 
 // ============================================
